@@ -10,6 +10,7 @@ import FaceRecognition from './components/FaceRecognition/FaceRecognition.js'
 import SignIn from './components/SignIn/SignIn.js'
 import Register from './components/Register/Register.js'
 
+
 const initialState = 
 {
 input: '',
@@ -53,13 +54,28 @@ class App extends Component {
     this.setState({route:place});
   }
 
+  checkImage = (src) => {
+    const checks = {};
+    const img = new Image();
+    img.src = src;
+    let status;
+    return new Promise((resolve, reject) => {
+      
+      img.onerror = () => {
+        checks[src] = false;
+        status=false;
+        resolve(status);
+      };
+      img.onload = () => {
+        checks[src] = true;
+        status=true;
+        resolve(status);
+                }
+    })
+  }
+
   calculatePointsInImage = (actualFace,width,height) => {
-    let points = {
-      leftCol: '',
-      topRow: '',
-      rightCol: '',
-      bottomRow: ''
-    };
+    const points = {};
     points.leftCol = actualFace.left_col*width;
     points.topRow = actualFace.top_row*height;
     points.rightCol = width*(1.0-actualFace.right_col);
@@ -74,23 +90,21 @@ class App extends Component {
     const width = Number(image.width);
     const height = Number(image.height);
 
-    for(let i=0;i<faceLocationCoordinates.length;i++){
-      let actualFace = faceLocationCoordinates[i].region_info.bounding_box;
+    for(let actualFace of faceLocationCoordinates){
+      actualFace = actualFace.region_info.bounding_box;
       arrayOfFacePoints.push(this.calculatePointsInImage(actualFace,width,height));
       }
-      console.log('FInal points = ', arrayOfFacePoints)
       return arrayOfFacePoints;
     }
 
   boxesOutlineFace = (boxes_points) => {
-    console.log('boxes_points = ',boxes_points);
     this.setState({boxes: boxes_points})
   }
   onInputChange = (event) => {
     this.setState({input: event.target.value})
   }
-
-  onButtonSubmit = () => {
+  
+  detectFace = () => {
     this.setState({imageUrl: this.state.input})
     fetch('http://localhost:3000/imageurl',{
             method:'post',
@@ -100,7 +114,7 @@ class App extends Component {
             })
           })
       .then(response => response.json())
-      .catch(err => console.log(err))
+      .catch(err => console.log('ERROR!',err))
       .then(response => {
         if(response){
           fetch('http://localhost:3000/image',{
@@ -120,6 +134,14 @@ class App extends Component {
       })
       .catch(err => console.log(err)); //if has a error then cath
       this.setState({input: ''});
+  }
+
+  onButtonSubmit = () => {
+    if( this.state.input == null || !this.state.input) {return}
+    this.checkImage(this.state.input)
+    .then(res => {return res} )
+    .catch(err => console.log(err,'Erro ao carregar URL'))
+    .then(this.detectFace())
   }
   
   render(){
