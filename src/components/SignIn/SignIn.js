@@ -15,6 +15,9 @@ class SignIn extends Component {
     onPasswordChange = (event) => {
         this.setState({signInPassword: event.target.value})
     }
+    handleKeyPress = (event) => {
+        if(event.key === 'Enter') this.onSubmitSignIn();
+    }
 
     onSubmitSignIn = () => {
        fetch('http://localhost:3000/signin', {
@@ -62,6 +65,7 @@ class SignIn extends Component {
                             name="password"
                             id="password"
                             onChange={this.onPasswordChange}
+                            onKeyPress={this.handleKeyPress}
                         />
                     </div>
                     </fieldset>

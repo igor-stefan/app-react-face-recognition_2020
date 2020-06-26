@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import './App.css';
-import Navigation from './components/Navigation/Navigation.js'
-import Logo from './components/Logo/Logo.js'
+import Navigation from '../components/Navigation/Navigation.js'
+import Logo from '../components/Logo/Logo.js'
 import Particles from 'react-particles-js';
 import {particleOptions} from './particle.js'
-import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm.js'
-import Rank from './components/Rank/Rank.js'
-import FaceRecognition from './components/FaceRecognition/FaceRecognition.js'
-import SignIn from './components/SignIn/SignIn.js'
-import Register from './components/Register/Register.js'
+import ImageLinkForm from '../components/ImageLinkForm/ImageLinkForm.js'
+import Rank from '../components/Rank/Rank.js'
+import FaceRecognition from '../components/FaceRecognition/FaceRecognition.js'
+import SignIn from '../components/SignIn/SignIn.js'
+import Register from '../components/Register/Register.js'
 
 
 const initialState = 
@@ -106,42 +106,44 @@ class App extends Component {
   
   detectFace = () => {
     this.setState({imageUrl: this.state.input})
-    fetch('http://localhost:3000/imageurl',{
+    fetch('http://localhost:3000/imageurl',{ //request to backend to make api call
             method:'post',
             headers: {'Content-type': 'application/json'},
             body: JSON.stringify({
               input:this.state.input
             })
           })
-      .then(response => response.json())
+      .then(response => response.json()) //get response
       .catch(err => console.log('ERROR!',err))
-      .then(response => {
-        if(response){
+      .then(response => { //if response comes
+        console.log('response = ',response);
+        if(response.outputs[0].data.regions != null){ //send to backend to increment entries
           fetch('http://localhost:3000/image',{
             method:'put',
             headers: {'Content-type': 'application/json'},
             body: JSON.stringify({
               id:this.state.user.id
-            })
+            }) //send the id of user to filter in database
           })
-        .then(response => response.json())
-        .then(count => {
+        .then(response => response.json()) //get the response
+        .then(count => { //change te count of entries of user in frontend
           this.setState(Object.assign(this.state.user,{entries:count})) //setState END
         }) //count END
         .catch(err => console.log(err));
-        } //if response END
         this.boxesOutlineFace(this.calculateFaceLocation(response)) //calculate the points of box
+        } //if response END
+        else{
+          this.boxesOutlineFace([{}]);
+        }
       })
-      .catch(err => console.log(err)); //if has a error then cath
-      this.setState({input: ''});
+      .catch(err => console.log('ERROR:',err)); //if has a error then catch
+      this.setState({input: ''}); //clear input
   }
 
   onButtonSubmit = () => {
     if( this.state.input == null || !this.state.input) {return}
     this.checkImage(this.state.input)
-    .then(res => {return res} )
-    .catch(err => console.log(err,'Erro ao carregar URL'))
-    .then(this.detectFace())
+    .then(isImage => {isImage? this.detectFace() : this.setState({input:''})})
   }
   
   render(){

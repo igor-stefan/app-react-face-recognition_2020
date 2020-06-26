@@ -2,6 +2,9 @@ import React from 'react'
 import './ImageLinkForm.css'
 
 const ImageLinkForm = ({ onInputChange, onButtonSubmit, valueField }) => {
+    const handleKeyPress = (event) => {
+        if(event.key === 'Enter') onButtonSubmit();
+    }
     return(
         <div>
             <p className='f3 b'>
@@ -13,7 +16,8 @@ const ImageLinkForm = ({ onInputChange, onButtonSubmit, valueField }) => {
                     type='text'
                     placeholder='https://www.myimage.com' 
                     onChange={onInputChange}
-                    value={valueField}     
+                    value={valueField}
+                    onKeyPress={handleKeyPress}     
                     />
                 <button
                     className = 'w-30 grow br2 f4 link pv2 dib white b bg-light-purple'

@@ -20,6 +20,9 @@ class Register extends Component {
     onPasswordChange = (event) => {
         this.setState({registerPassword: event.target.value})
     }
+    handleKeyPress = (event) => {
+        if(event.key === 'Enter') this.onSubmitSignIn();
+    }
 
     onSubmitRegister = () => {
         fetch('http://localhost:3000/register', {
@@ -77,6 +80,7 @@ class Register extends Component {
                             name="password"  
                             id="password"
                             onChange={this.onPasswordChange}
+                            onKeyPress={this.handleKeyPress}
                         />
 
                     </div>
